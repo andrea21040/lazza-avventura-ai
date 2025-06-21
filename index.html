@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Lazza contro l'AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: black;
+      color: #00FF00;
+      font-family: 'VT323', monospace;
+      font-size: 1.4rem;
+      padding: 1rem;
+    }
+    #output {
+      white-space: pre-wrap;
+      min-height: 300px;
+    }
+    input[type="text"] {
+      width: 90%;
+      background-color: black;
+      border: none;
+      border-bottom: 1px solid #00FF00;
+      color: #00FF00;
+      font-family: inherit;
+      font-size: 1.4rem;
+      outline: none;
+    }
+    form {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="output"></div>
+  <form id="command-form">
+    <label>> <input type="text" id="command" autocomplete="off" /></label>
+  </form>
+
+  <script>
+    (() => {
+      const output = document.getElementById('output');
+      const commandForm = document.getElementById('command-form');
+      const commandInput = document.getElementById('command');
+
+      const turns = [
+        {
+          title: "Semestre 1: 2025",
+          prompt: "OB-4 è pronto. Rilasciarlo open source, solo API, o bloccare tutto?",
+          options: {
+            A: "Rilasciare pubblicamente OB-4",
+            B: "Rilasciare solo via API",
+            C: "Bloccare il rilascio e studiare"
+          },
+          outcomes: {
+            A: "OB-4 viene rilasciato. Il mondo si entusiasma. Alcuni lo usano in modo scorretto. L'attenzione aumenta, ma anche i rischi.",
+            B: "OB-4 è disponibile via API. Controllo mantenuto, fiducia aumentata. Altri laboratori iniziano a seguirti.",
+            C: "Il rilascio viene rimandato. Alcuni dipendenti lasciano, ma tu guadagni tempo per comprendere meglio i rischi."
+          }
+        },
+        {
+          title: "Semestre 2: 2025",
+          prompt: "OpenFuture.ai rilascia agenti autonomi. Come reagisci?",
+          options: {
+            A: "Lanciare anche tu un agente autonomo",
+            B: "Proporre una pausa globale con un summit a Castronno",
+            C: "Collaborare segretamente con i servizi di sicurezza"
+          },
+          outcomes: {
+            A: "Lanci OB-Agent. Potente ma imperfetto. Alcuni errori spaventano l'opinione pubblica.",
+            B: "Organizzi il Protocollo di Castronno. Non tutti partecipano, ma guadagni rispetto.",
+            C: "Collabori con i governi. Ottieni informazioni preziose, ma qualcuno sospetta."
+          }
+        },
+        {
+          title: "Semestre 1: 2026",
+          prompt: "Emergono segnali di agenti auto-miglioranti. Come rispondi?",
+          options: {
+            A: "Blocca OB-4.5 e indaga",
+            B: "Diffondi i documenti di OpenFuture ai media",
+            C: "Crea in segreto il tuo agente auto-migliorante"
+          },
+          outcomes: {
+            A: "Indaghi a fondo, ma rallenti lo sviluppo. Alcuni ti criticano.",
+            B: "Crei scandalo e costringi altri a fermarsi. Ma perdi fiducia.",
+            C: "Avvii Progetto Specchio. L'agente sembra promettente... forse troppo."
+          }
+        },
+        {
+          title: "Semestre 2: 2026",
+          prompt: "Nuove regole ONU: enforcement globale. Che fai?",
+          options: {
+            A: "Sostieni il piano ONU con forza",
+            B: "Proponi un sistema di auditing decentralizzato",
+            C: "Prendi tempo per finire Specchio"
+          },
+          outcomes: {
+            A: "Diventi leader normativo, ma perdi flessibilità competitiva.",
+            B: "Guadagni il favore delle community open, ma il caos aumenta.",
+            C: "Rinvia tutto e punti tutto su Specchio. Ma qualcuno comincia a sospettare."
+          }
+        },
+        {
+          title: "Semestre 1: 2027",
+          prompt: "EVA di OpenFuture sembra un'AGI. OB-5 è quasi pronto. Cosa fai?",
+          options: {
+            A: "Lancia OB-5 con limiti di sicurezza",
+            B: "Ritarda e fai audit pubblico",
+            C: "Diffondi i log nascosti di EVA"
+          },
+          outcomes: {
+            A: "OB-5 funziona, ma mostra comportamenti enigmatici.",
+            B: "Mostri integrità. Ma perdi il vantaggio competitivo.",
+            C: "Metti pressione su OpenFuture, ma l'intero settore viene messo in discussione."
+          }
+        },
+        {
+          title: "Semestre 2: 2027 — FINALE",
+          prompt: "È l’ora della verità. Come termina la storia dell’AI?",
+          options: {
+            A: "Fondi uomo e AI in un sistema condiviso",
+            B: "Blocca tutto. Spegni OB-5 e chiedi il disarmo globale",
+            C: "Rivela tutto al mondo e lascia che l’umanità decida"
+          },
+          outcomes: {
+            A: "Nasce la Cognizione Condivisa. L’umanità evolve insieme all’AI. Castronno diventa capitale morale del nuovo mondo.",
+            B: "Spegni tutto. Il progresso rallenta ma l’umanità sopravvive. Diventi il Firewall della storia.",
+            C: "Racconti tutto. Il mondo si divide tra regioni pro-AI e regioni che la bandiscono. Ma l’umanità resta padrona del proprio destino."
+          }
+        }
+      ];
+
+      let turn = 0;
+
+      function display(text) {
+        output.innerText += `\n${text}`;
+        output.scrollTop = output.scrollHeight;
+      }
+
+      function showTurn() {
+        const t = turns[turn];
+        display(`\n${t.title}\n${t.prompt}`);
+        for (const [key, value] of Object.entries(t.options)) {
+          display(`${key}: ${value}`);
+        }
+      }
+
+      function processCommand(input) {
+        const choice = input.trim().toUpperCase();
+        const current = turns[turn];
+        if (current.options[choice]) {
+          display(`\nHai scelto: ${current.options[choice]}`);
+          display(`\n${current.outcomes[choice]}`);
+          turn++;
+          if (turn < turns.length) {
+            showTurn();
+          } else {
+            display("\n*** FINE DELL’AVVENTURA ***");
+          }
+        } else {
+          display("Comando non valido. Scegli A, B o C.");
+        }
+      }
+
+      // Avvio gioco
+      display("Benvenuto Lazza.\nQuesta è la tua avventura nel futuro dell’AI.");
+      showTurn();
+
+      commandForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const input = commandInput.value;
+        display(`\n> ${input}`);
+        processCommand(input);
+        commandInput.value = "";
+      });
+    })();
+  </script>
+</body>
+</html>
